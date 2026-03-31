@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }} - ACC Build{% endblock %}
+
+{% block body %}
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <h2>ACC Build</h2>
+    <span>Project Dashboard</span>
+  </div>
+  <ul class="sidebar-nav">
+    <li><a href="/dashboard"><span class="icon">&#9632;</span> Projects</a></li>
+    <li><a href="/dashboard/project/{{ project.id }}" class="active"><span class="icon">&#9654;</span> {{ project.name }}</a></li>
+  </ul>
+  <div class="sidebar-footer">
+    <a href="/api/auth/status" style="color:#7b8794; text-decoration:none; font-size:12px;">Auth Status</a>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <h1>{{ project.name }}</h1>
+    <div class="topbar-right">
+      <span class="badge badge-{{ project.status }}">{{ project.status }}</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="/dashboard">Projects</a>
+      <span>/</span>
+      <span style="color:#4a5568;">{{ project.name }}</span>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-row">
+      <div class="summary-item">
+        <div class="label">RFIs</div>
+        <div class="value">{{ rfis|length }}</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">Submittals</div>
+        <div class="value">{{ submittals|length }}</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">Issues</div>
+        <div class="value">{{ issues|length }}</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">Project ID</div>
+        <div class="value" style="font-size:11px; margin-top:8px; word-break:break-all; color:#718096;">{{ project.id }}</div>
+      </div>
+    </div>
+
+    <!-- RFIs -->
+    <div class="card">
+      <div class="card-header">
+        <h3>RFIs (Requests for Information)</h3>
+        <span class="card-count">{{ rfis|length }} total</span>
+      </div>
+      {% if rfis %}
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Assigned To</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rfi in rfis %}
+          <tr>
+            <td>{{ rfi.title or rfi.get('subject', 'Untitled') }}</td>
+            <td>
+              {% set s = rfi.status|default('unknown')|lower %}
+              <span class="badge {% if s == 'open' %}badge-open{% elif s == 'closed' or s == 'answered' %}badge-answered{% elif s == 'draft' %}badge-draft{% elif s == 'void' %}badge-void{% else %}badge-open{% endif %}">
+                {{ rfi.status|default('unknown') }}
+              </span>
+            </td>
+            <td>{{ rfi.createdAt[:10] if rfi.createdAt else '-' }}</td>
+            <td>{{ rfi.assignedTo|default('-') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% elif rfi_error %}
+      <div class="empty-state">
+        <div class="icon">&#128196;</div>
+        <h4>RFIs not available</h4>
+        <p>{{ rfi_error }}</p>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="icon">&#128196;</div>
+        <h4>No RFIs yet</h4>
+        <p>Create an RFI in your ACC project to see it here.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Submittals -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Submittals</h3>
+        <span class="card-count">{{ submittals|length }} total</span>
+      </div>
+      {% if submittals %}
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Spec Section</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sub in submittals %}
+          <tr>
+            <td>{{ sub.title or sub.get('description', 'Untitled') }}</td>
+            <td>
+              {% set s = sub.status|default('unknown')|lower %}
+              <span class="badge {% if s == 'submitted' %}badge-submitted{% elif s == 'approved' %}badge-answered{% elif s == 'draft' %}badge-draft{% elif s == 'void' or s == 'rejected' %}badge-void{% else %}badge-open{% endif %}">
+                {{ sub.status|default('unknown') }}
+              </span>
+            </td>
+            <td>{{ sub.createdAt[:10] if sub.createdAt else '-' }}</td>
+            <td>{{ sub.specSection|default('-') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% elif submittal_error %}
+      <div class="empty-state">
+        <div class="icon">&#128230;</div>
+        <h4>Submittals not available</h4>
+        <p>{{ submittal_error }}</p>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="icon">&#128230;</div>
+        <h4>No submittals yet</h4>
+        <p>Create a submittal in your ACC project to see it here.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Issues -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Issues</h3>
+        <span class="card-count">{{ issues|length }} total</span>
+      </div>
+      {% if issues %}
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Type</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for issue in issues %}
+          <tr>
+            <td>{{ issue.attributes.title if issue.attributes else issue.get('title', 'Untitled') }}</td>
+            <td>
+              <span class="badge badge-open">{{ issue.attributes.status if issue.attributes else issue.get('status', 'unknown') }}</span>
+            </td>
+            <td>{{ issue.attributes.ng_issue_type_id if issue.attributes else '-' }}</td>
+            <td>{{ issue.attributes.created_at[:10] if issue.attributes and issue.attributes.created_at else '-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% elif issue_error %}
+      <div class="empty-state">
+        <div class="icon">&#9888;</div>
+        <h4>Issues not available</h4>
+        <p>{{ issue_error }}</p>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="icon">&#9888;</div>
+        <h4>No issues yet</h4>
+        <p>Create an issue in your ACC project to see it here.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

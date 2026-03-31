@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - ACC Build{% endblock %}
+
+{% block body %}
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <h2>ACC Build</h2>
+    <span>Project Dashboard</span>
+  </div>
+  <ul class="sidebar-nav">
+    <li><a href="/dashboard" class="active"><span class="icon">&#9632;</span> Projects</a></li>
+  </ul>
+  <div class="sidebar-footer">
+    <a href="/api/auth/status" style="color:#7b8794; text-decoration:none; font-size:12px;">Auth Status</a>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <h1>Projects</h1>
+    <div class="topbar-right">
+      <div class="user-badge">
+        <div class="user-avatar">{{ user_initials }}</div>
+        {{ user_name }}
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Summary -->
+    <div class="summary-row">
+      <div class="summary-item">
+        <div class="label">Total Projects</div>
+        <div class="value">{{ projects|length }}</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">Active</div>
+        <div class="value" style="color:#38a169;">{{ projects|selectattr('status', 'equalto', 'active')|list|length }}</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">Account</div>
+        <div class="value" style="font-size:16px; margin-top:8px;">{{ account_name }}</div>
+      </div>
+    </div>
+
+    <!-- Project cards -->
+    {% if projects %}
+    <div class="project-grid">
+      {% for project in projects %}
+      <a href="/dashboard/project/{{ project.id }}" class="project-card">
+        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px;">
+          <h3>{{ project.name }}</h3>
+          <span class="badge badge-{{ project.status }}">{{ project.status }}</span>
+        </div>
+        <div class="meta">ID: {{ project.id }}</div>
+        <div class="stats">
+          {% if project.startDate %}
+          <span>Start: {{ project.startDate[:10] }}</span>
+          {% endif %}
+          {% if project.endDate %}
+          <span>End: {{ project.endDate[:10] }}</span>
+          {% endif %}
+          {% if project.companyCount is defined %}
+          <span>{{ project.companyCount }} companies</span>
+          {% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">&#128193;</div>
+      <h4>No projects found</h4>
+      <p>Create a project in your ACC account to get started.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

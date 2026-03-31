@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:aps.autodesk.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:static.rainfocus.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:app.autodeskforma.com)",
+      "Bash(npm init:*)"
+    ]
+  }
+}
